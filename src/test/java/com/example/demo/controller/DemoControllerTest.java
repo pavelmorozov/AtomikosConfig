@@ -6,13 +6,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import javax.sql.DataSource;
+
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.jta.atomikos.AtomikosDataSourceBean;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,6 +38,14 @@ import com.example.demo.persistence.mapper.second.SecondMapper;
 
 public class DemoControllerTest {
 
+	@Autowired
+	@Qualifier("firstDataSource")
+	DataSource firstDataSource;
+	
+	@Autowired
+	@Qualifier("secondDataSource")
+	DataSource secondDataSource;
+	
 	@MockBean
 	FirstMapper firstMapper;
 
@@ -59,5 +72,11 @@ public class DemoControllerTest {
 				.andExpect(jsonPath("$.first", is("first name")));
 
 	}
+	
+	@After
+	public void afterTest() {
+		((AtomikosDataSourceBean)firstDataSource).close();
+		((AtomikosDataSourceBean)secondDataSource).close();
+	}	
 
 }
